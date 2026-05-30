@@ -22,18 +22,32 @@ jobs:
           pwd
           ls -la
 
+      - name: Check DockerHub Username Length
+        run: |
+          echo "Username Length:"
+          echo -n "${{ secrets.DOCKERHUB_USERNAME }}" | wc -c
+
       - name: Build Docker Image
         run: |
-          docker build -t "${{ secrets.DOCKERHUB_USERNAME }}/docker-ci-selfhosted-demo:latest" .
+          docker build -t ${DOCKER_USER}/docker-ci-selfhosted-demo:latest .
+        env:
+          DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
 
       - name: Push Docker Image
         run: |
-          docker push "${{ secrets.DOCKERHUB_USERNAME }}/docker-ci-selfhosted-demo:latest"
+          docker push ${DOCKER_USER}/docker-ci-selfhosted-demo:latest
+        env:
+          DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
 
       - name: Pull Docker Image
         run: |
-          docker pull "${{ secrets.DOCKERHUB_USERNAME }}/docker-ci-selfhosted-demo:latest"
+          docker pull ${DOCKER_USER}/docker-ci-selfhosted-demo:latest
+        env:
+          DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
 
       - name: Run Docker Container
         run: |
-          docker run -d --name docker-ci-container -p 80:80 "${{ secrets.DOCKERHUB_USERNAME }}/docker-ci-selfhosted-demo:latest"
+          docker rm -f docker-ci-container || true
+          docker run -d --name docker-ci-container -p 80:80 ${DOCKER_USER}/docker-ci-selfhosted-demo:latest
+        env:
+          DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
